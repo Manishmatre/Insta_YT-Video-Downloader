@@ -3,8 +3,18 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white;
   }
 }
 
@@ -14,10 +24,10 @@
   }
   
   .btn-primary {
-    @apply bg-primary text-white hover:bg-primary/90;
+    @apply bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700;
   }
   
   .input {
-    @apply w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50;
+    @apply w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/50;
   }
 } 

@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import Header from './components/Header'
-import UrlInput from './components/UrlInput'
-import Messages from './components/Messages'
 import PermissionDialog from './components/PermissionDialog'
-import VideoInfoDisplay from './components/VideoInfoDisplay'
+import VideoInfoDisplay, { VideoInfo } from './components/VideoInfoDisplay'
 import Footer from './components/Footer'
-import { VideoInfo } from './components/VideoInfoDisplay'
+import FAQSection from './components/FAQSection'
+import SupportedPlatforms from './components/SupportedPlatforms'
+import HeroSection from './components/HeroSection'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
+import DMCA from './pages/DMCA'
 
 function App() {
   const [url, setUrl] = useState('')
@@ -19,6 +24,33 @@ function App() {
   const [successMessage, setSuccessMessage] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [downloadingFormatId, setDownloadingFormatId] = useState<string | null>(null)
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    // Check if we're in the browser
+    if (typeof window !== 'undefined') {
+      // Check localStorage first
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        return savedTheme
+      }
+      // Check system preference
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark'
+      }
+    }
+    return 'light'
+  })
+
+  // Initialize theme on mount
+  useEffect(() => {
+    const root = window.document.documentElement
+    root.classList.remove('light', 'dark')
+    root.classList.add(theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'))
+  }
 
   const handlePaste = async () => {
     try {
@@ -185,44 +217,58 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <Header />
-        
-        <div className="space-y-6">
-          <UrlInput
-            url={url}
-            setUrl={setUrl}
-            handlePaste={handlePaste}
-            handleClear={handleClear}
-            handleGetInfo={handleGetInfo}
-            loading={loading}
-            downloading={downloading}
-            isAnalyzing={isAnalyzing}
-          />
+    <HelmetProvider>
+      <Router>
+        <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+          <Header theme={theme} toggleTheme={toggleTheme} />
 
-          <Messages error={error} successMessage={successMessage} />
+          <Routes>
+            <Route path="/" element={(
+              <div className="max-w-4xl mx-auto px-4 py-12">
+                <div className="space-y-6">
+                  <HeroSection
+                    url={url}
+                    setUrl={setUrl}
+                    handlePaste={handlePaste}
+                    handleClear={handleClear}
+                    handleGetInfo={handleGetInfo}
+                    loading={loading}
+                    downloading={downloading}
+                    isAnalyzing={isAnalyzing}
+                    error={error}
+                    successMessage={successMessage}
+                  />
 
-          <PermissionDialog
-            showPermissionDialog={showPermissionDialog}
-            handlePermissionGrant={handlePermissionGrant}
-            setShowPermissionDialog={setShowPermissionDialog}
-          />
+                  <PermissionDialog
+                    showPermissionDialog={showPermissionDialog}
+                    handlePermissionGrant={handlePermissionGrant}
+                    setShowPermissionDialog={setShowPermissionDialog}
+                  />
 
-          <VideoInfoDisplay
-            videoInfo={videoInfo}
-            handleDownload={handleDownload}
-            downloading={downloading}
-            downloadingFormatId={downloadingFormatId}
-            downloadProgress={downloadProgress}
-            loading={loading}
-          />
+                  <VideoInfoDisplay
+                    videoInfo={videoInfo}
+                    handleDownload={handleDownload}
+                    downloading={downloading}
+                    downloadingFormatId={downloadingFormatId}
+                    downloadProgress={downloadProgress}
+                    loading={loading}
+                  />
+                </div>
+
+                <FAQSection />
+                <SupportedPlatforms />
+              </div>
+            )} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/dmca" element={<DMCA />} />
+          </Routes>
+
+          <Footer />
         </div>
-
-        <Footer />
-      </div>
-    </div>
+      </Router>
+    </HelmetProvider>
   )
 }
 
-export default App
+export default App 
